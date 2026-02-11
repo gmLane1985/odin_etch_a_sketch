@@ -5,26 +5,48 @@ function getRandomColor() {
   const red = Math.floor(Math.random() * 256);
   const green = Math.floor(Math.random() * 256);
   const blue = Math.floor(Math.random() * 256);
-  const color = 'rgb(' + red + ', ' + green + ', ' + blue + ')';
+  const color = `rgb(${red}, ${green}, ${blue})`;
   return color;
 }
 
 function colorSquare(square) {
-  if (square.dataset.count === undefined) {
-    square.style.backgroundColor = getRandomColor();
-    square.dataset.count = 0;
+  // First time the square is touched - pick a random color
+  if (square.dataset.baseRed === undefined) {
+    const red = Math.floor(Math.random() * 256);
+    const green = Math.floor(Math.random() * 256);
+    const blue = Math.floor(Math.random() * 256);
+
+    // Remember this color for later
+    square.dataset.baseRed = red;
+    square.dataset.baseGreen = green;
+    square.dataset.baseBlue = blue;
+    square.dataset.touches = 0;
   }
 
-  square.dataset.count = parseInt(square.dataset.count) + 1;
-  const count = parseInt(square.dataset.count);
+  // Count how many times this square has been touched
+  square.dataset.touches = parseInt(square.dataset.touches) + 1;
+  const touches = parseInt(square.dataset.touches);
 
-  const opacity = 1 - count * 0.1;
+  // Get the original random color we picked
+  let red = parseInt(square.dataset.baseRed);
+  let green = parseInt(square.dataset.baseGreen);
+  let blue = parseInt(square.dataset.baseBlue);
 
-  if (opacity > 0) {
-    square.style.opacity = opacity;
-  } else {
-    square.style.opacity = 0;
+  // Make the color darker - multiply by 0.9 for each touch
+  // This makes it 10% darker each time, fully black after 10 touches
+  for (let i = 0; i < touches; i++) {
+    red = red * 0.9;
+    green = green * 0.9;
+    blue = blue * 0.9;
   }
+
+  // Round down to whole numbers
+  red = Math.floor(red);
+  green = Math.floor(green);
+  blue = Math.floor(blue);
+
+  // Set the darkened color
+  square.style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
 }
 
 function createGrid(gridSize) {
@@ -51,8 +73,7 @@ function createGrid(gridSize) {
 
   // Update the grid size with CSS
   const styleSheet = document.createElement('style');
-  styleSheet.textContent =
-    '.grid-square { flex: 1 1 calc(100% / ' + gridSize + '); }';
+  styleSheet.textContent = `.grid-square { flex: 1 1 calc(100% / ${gridSize}); }`;
   document.head.appendChild(styleSheet);
 }
 
